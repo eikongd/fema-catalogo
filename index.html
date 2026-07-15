@@ -554,6 +554,7 @@ window.mostrarCarrito = function() {
 };
 
 // Cambiar cantidades
+// Cambiar cantidades y refrescar el total de manera dinámica
 window.cambiarCantidad = function(id, cambio) {
   const item = carrito.find(x => x.id.toString() === id.toString());
   if (!item) return;
@@ -566,7 +567,7 @@ window.cambiarCantidad = function(id, cambio) {
 
   actualizarContadorCarrito();
   
-  // Refrescar el contenido de la lista visual sin recargar el panel entero
+  // REGENERACIÓN CORREGIDA: Ahora llama a enviarCarritoWhatsApp()
   const lista = document.getElementById('lista-carrito');
   const totalElen = document.getElementById('total-carrito');
   if(lista) {
@@ -603,7 +604,6 @@ window.cambiarCantidad = function(id, cambio) {
     if(totalElen) totalElen.innerText = total.toLocaleString('es-PY') + ' Gs.';
   }
 };
-
 // --- REDIRECCIÓN ESTÉTICA, AMIGABLE Y FEMENINA A WHATSAPP ---
 window.enviarCarritoWhatsApp = function() {
   if (carrito.length === 0) return;
