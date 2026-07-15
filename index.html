@@ -14,6 +14,13 @@
 <!-- Librería PhotoSwipe para el visor de fotos con Zoom y Deslizamiento -->
 <link rel="stylesheet" href="https://unpkg.com/photoswipe@5.4.3/dist/photoswipe.css">
 <style>
+
+  /* Contenedor de variantes de color */
+  .card .color-variants{display:flex;gap:8px;padding:8px 20px 0;flex-wrap:wrap;align-items:center;}
+  .card .color-label{font-size:11px;color:var(--texto-suave);margin-right:2px;text-transform:uppercase;letter-spacing:0.5px;}
+  .card .color-badge{font-size:11px;padding:2px 8px;border:1px solid var(--linea);background:#fff;cursor:pointer;transition:all 0.2s;}
+  .card .color-badge.active{border-color:var(--rosa-fuerte);background:var(--rosa);color:var(--rosa-texto);font-weight:500;}
+  
   :root{
     --bg:#FFFFFF; --bg-soft:#FBF5F1;
     --rosa:#F3D9DF; --rosa-fuerte:#C97C90; --rosa-texto:#A85A70;
@@ -233,7 +240,36 @@ window.changeActivePhoto = function(btn, imgUrl, joyaId, index) {
   card.querySelectorAll('.thumb').forEach(t => t.classList.remove('active'));
   btn.classList.add('active');
 }
+// Maneja la selección del color variant
+window.changeActiveColor = function(btn, colorName, imgUrl, joyaId, index) {
+  const card = btn.closest('.card');
+  
+  // Activa la variante visual de color
+  card.querySelectorAll('.color-badge').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  
+  // Guarda el color seleccionado en el botón de agregar y comprar directo
+  const btnCarrito = card.querySelector('.btn-carrito-item');
+  if(btnCarrito) btnCarrito.setAttribute('data-color', colorName);
+  
+  const btnComprar = card.querySelector('.comprar');
+  if(btnComprar) {
+    const j = joyas.find(x => x.id.toString() === joyaId.toString());
+    if(j) btnComprar.href = buildWhatsAppLink(j, colorName);
+  }
 
+  // Si esa variante tiene una imagen asociada en la misma posición, la mostramos
+  if(imgUrl) {
+    const thumbTarget = card.querySelector(`.thumb[data-index="${index}"]`);
+    if(thumbTarget) {
+      changeActivePhoto(thumbTarget, imgUrl, joyaId, index);
+    } else {
+      const mainImg = card.querySelector('.img-wrap');
+      mainImg.style.backgroundImage = `url('${imgUrl}')`;
+      mainImg.setAttribute('data-active-index', index);
+    }
+  }
+}
 window.openGallery = function(joyaId, startIndex = 0) {
   const j = joyas.find(x => x.id.toString() === joyaId.toString());
   if(!j) return;
@@ -297,17 +333,43 @@ function cardHtml(j){
     thumbsHtml = `<div class="thumbs-container">` + 
       imgs.map((img, idx) => {
         return `<div class="thumb ${idx === 0 ? 'active' : ''}" 
+                     data-index="${idx}"
                      style="background-image:url('${img.replace(/'/g,"\\'")}')"
                      onclick="changeActivePhoto(this, '${img.replace(/'/g,"\\'")}', '${j.id}', ${idx})">
                 </div>`;
       }).join('') + `</div>`;
   }
 
+  // Renderizamos variantes de color (si existen en la base de datos)
+  let colorsHtml = '';
+  let colorInicial = '';
+  if (j.colores) {
+    let rawColores = [];
+    if(Array.isArray(j.colores)) {
+      rawColores = j.colores;
+    } else if(typeof j.colores === 'string') {
+      rawColores = j.colores.split(',').map(c => c.trim()).filter(Boolean);
+    }
+
+    if (rawColores.length > 0) {
+      colorInicial = rawColores[0]; // El primer color queda activo por defecto
+      colorsHtml = `<div class="color-variants"><span class="color-label">Color:</span>`;
+      colorsHtml += rawColores.map((col, idx) => {
+        // Vinculamos en orden: primer color -> foto 0, segundo color -> foto 1, etc.
+        const imgAsociada = imgs[idx] || firstImg;
+        return `<span class="color-badge facet-sm ${idx === 0 ? 'active' : ''}" 
+                      onclick="changeActiveColor(this, '${col}', '${imgAsociada.replace(/'/g,"\\'")}', '${j.id}', ${idx})">
+                  ${col}
+                </span>`;
+      }).join('');
+      colorsHtml += `</div>`;
+    }
+  }
+
   return `
   <div class="card facet">
     ${j.destacado ? '<div class="destacado">Destacada</div>' : ''}
     
-    <!-- Al dar clic en la foto principal se abre el carrusel en grande con zoom -->
     <div class="img-wrap" 
          id="main-img-${j.id}"
          data-active-index="0"
@@ -317,6 +379,7 @@ function cardHtml(j){
     </div>
     
     ${thumbsHtml}
+    ${colorsHtml}
     
     <div class="body">
       <div class="cat">${j.categoria}</div>
@@ -327,20 +390,23 @@ function cardHtml(j){
         ${j.peso ? '<br>Peso: '+j.peso+' g' : ''}
       </div>
       <div class="price">${formatGs(j.precio)}</div>
-<!-- Botón para Agregar al Carrito (Nuevo) -->
-        <button class="btn-carrito-item" onclick="agregarAlCarrito('${j.id}')" style="width: 100%; padding: 10px; margin-bottom: 8px; border: none; border-radius: 8px; background-color: #d4af37; color: white; font-weight: bold; display: flex; align-items: center; justify-content: center; gap: 8px; cursor: pointer;">
-          🛒 Agregar al Carrito
-        </button>
+      
+      <!-- Botón para Agregar al Carrito (Guarda el color dinámicamente) -->
+      <button class="btn-carrito-item" 
+              onclick="agregarAlCarrito('${j.id}')" 
+              data-color="${colorInicial}"
+              style="width: 100%; padding: 10px; margin-bottom: 8px; border: none; border-radius: 8px; background-color: #d4af37; color: white; font-weight: bold; display: flex; align-items: center; justify-content: center; gap: 8px; cursor: pointer;">
+        🛒 Agregar al Carrito
+      </button>
 
-        <!-- Botón de Comprar Directo (El que ya tenías) -->
-        <a class="comprar" href="${buildWhatsAppLink(j)}" target="_blank" rel="noopener" style="margin-top: 0;">
-          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M17.5 14.4c-.3-.1-1.6-.8-1.9-.9-.2-.1-.4-.1-.6.1-.2.3-.7.9-.8 1-.1.2-.3.2-.6.1-2.2-1.1-3.2-2.2-4.2-4.2-.1-.3-.1-.5.1-.6.2-.2.5-.5.6-.8.1-.2 0-.4-.1-.6-.1-.1-.6-1.5-.8-1.9-.2-.4-.4-.3-.6-.3h-.6c-.2 0-.5.1-.7.4-1 1.2-1.4 1.6-1.5 1.9-.2.3-.4 1.4.2 3.2 1.2 3.8 3.2 5.1 4.2 5.6.8.4 1.6.4 2.2.3.7-.1 2.2-.9 2.5-1.7.3-.8.3-1.5.2-1.6z"/></svg>
-          Comprar directo
-        </a>
+      <!-- Botón de Comprar Directo -->
+      <a class="comprar" href="${buildWhatsAppLink(j, colorInicial)}" target="_blank" rel="noopener" style="margin-top: 0;">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M17.5 14.4c-.3-.1-1.6-.8-1.9-.9-.2-.1-.4-.1-.6.1-.2.3-.7.9-.8 1-.1.2-.3.2-.6.1-2.2-1.1-3.2-2.2-4.2-4.2-.1-.3-.1-.5.1-.6.2-.2.5-.5.6-.8.1-.2 0-.4-.1-.6-.1-.1-.6-1.5-.8-1.9-.2-.4-.4-.3-.6-.3h-.6c-.2 0-.5.1-.7.4-1 1.2-1.4 1.6-1.5 1.9-.2.3-.4 1.4.2 3.2 1.2 3.8 3.2 5.1 4.2 5.6.8.4 1.6.4 2.2.3.7-.1 2.2-.9 2.5-1.7.3-.8.3-1.5.2-1.6z"/></svg>
+        Comprar directo
+      </a>
     </div>
   </div>`;
 }
-
 function escapeHtml(s){ const d=document.createElement('div'); d.textContent=s||''; return d.innerHTML; }
 
 ['fSearch','fCategoria','fMaterial','fPiedra','fOrden'].forEach(id=>{
@@ -363,34 +429,48 @@ loadJoyas();
 let carrito = [];
 
 // Agregar un producto al carrito
+// Agregar un producto al carrito guardando su variante de color
 window.agregarAlCarrito = function(joyaId) {
   const j = joyas.find(x => x.id.toString() === joyaId.toString());
   if(!j) return;
 
-  const itemEnCarrito = carrito.find(x => x.id.toString() === joyaId.toString());
+  // Obtenemos el color seleccionado del atributo data-color
+  const cardElement = document.getElementById(`main-img-${j.id}`).closest('.card');
+  const btnCarrito = cardElement.querySelector('.btn-carrito-item');
+  const colorElegido = btnCarrito ? btnCarrito.getAttribute('data-color') : '';
+
+  // Buscamos si ya existe la joya con ESE COLOR en el carrito
+  const itemEnCarrito = carrito.find(x => x.id.toString() === joyaId.toString() && x.color === colorElegido);
 
   if (itemEnCarrito) {
     itemEnCarrito.cantidad += 1;
   } else {
-    // Tomamos la primera imagen para mostrarla en el resumen del carrito
+    // Buscamos si hay una imagen correspondiente al índice del color
     let imagenUrl = 'https://via.placeholder.com/150';
-    if (Array.isArray(j.imagen) && j.imagen.length > 0) {
-      imagenUrl = j.imagen[0];
-    } else if (typeof j.imagen === 'string' && j.imagen) {
-      imagenUrl = j.imagen;
+    let imgs = [];
+    if (Array.isArray(j.imagen)) imgs = j.imagen.filter(Boolean);
+    else if (typeof j.imagen === 'string' && j.imagen) imgs = [j.imagen];
+
+    if (j.colores) {
+      let rawColores = Array.isArray(j.colores) ? j.colores : j.colores.split(',').map(c => c.trim());
+      let idxColor = rawColores.indexOf(colorElegido);
+      imagenUrl = imgs[idxColor] || imgs[0] || imagenUrl;
+    } else {
+      imagenUrl = imgs[0] || imagenUrl;
     }
 
     carrito.push({
       id: j.id,
-      nombre: j.nombre || 'Joya sin nombre', // Corregido: j.nombre en lugar de j.titulo
+      nombre: j.nombre || 'Joya sin nombre',
       precio: j.precio || 0,
       imagen: imagenUrl,
+      color: colorElegido,
       cantidad: 1
     });
   }
 
   actualizarContadorCarrito();
-  alert(`¡${j.nombre} agregado al carrito!`); // Corregido
+  alert(`¡${j.nombre}${colorElegido ? ' (' + colorElegido + ')' : ''} agregado al carrito!`);
 };
 
 // Actualiza el número rojo del botón flotante
