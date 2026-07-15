@@ -154,23 +154,20 @@ if(SUPABASE_URL && SUPABASE_ANON_KEY){
 
 function formatGs(n){ return 'Gs. ' + Number(n).toLocaleString('es-PY'); }
 
-function buildWhatsAppLink(j) {
-  let texto = "💖 *¡HOLA! QUIERO HACER UN PEDIDO* 💖\n";
-  texto += "┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈\n\n";
-  texto += "✨ *Mi elegido de hoy:* \n\n";
-
-  // Usamos j.nombre para evitar el 'undefined'
-  texto += `🌸 *${j.nombre || 'Joya sin nombre'}*\n`;
-  texto += `  ✦ 🔢 Cantidad: *x1*\n`;
-  texto += `  ✦ 💵 Precio: _${(j.precio || 0).toLocaleString('es-PY')}_ Gs.\n\n`;
-
-  texto += "┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈\n";
-  texto += `⭐ *TOTAL DE MI COMPRA:* *${(j.precio || 0).toLocaleString('es-PY')} Gs.*\n\n`;
-  texto += "💌 _¿Me confirman si tienen disponible para poder coordinar la entrega? ¡Muchas gracias!_ 💕";
-
-  return `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(texto)}`;
+function buildWhatsAppLink(j, colorSeleccionado = '') {
+  const nroTelefono = "595982968591"; // <-- Aquí va tu número de WhatsApp de FEMA
+  
+  // Si hay un color seleccionado, lo agregamos con un emoji delicado
+  const detalleColor = colorSeleccionado ? `\n💖 *Color elegido:* ${colorSeleccionado}` : '';
+  
+  const mensaje = `¡Hola, FEMA! ✨ Me enamoré de esta hermosa joya y me encantaría saber si la tienen disponible:\n\n` +
+                  `🌸 *Producto:* ${j.nombre}${detalleColor}\n` +
+                  `✨ *Precio:* ${formatGs(j.precio)}\n\n` +
+                  `¡Muchísimas gracias! 💕`;
+                  
+  return `https://wa.me/${nroTelefono}?text=${encodeURIComponent(mensaje)}`;
 }
-
+  
 async function loadJoyas(){
   if(!supabaseClient){
     document.getElementById('gridArea').innerHTML = `<div class="setup">
@@ -583,41 +580,31 @@ window.cambiarCantidad = function(id, cambio) {
 };
 
 // --- REDIRECCIÓN ESTÉTICA, AMIGABLE Y FEMENINA A WHATSAPP ---
-window.enviarWhatsApp = function() {
-  if (carrito.length === 0) {
-    alert("¡Tu carrito está vacío todavía! Corre a llenarlo de brillos. ✨💖");
-    return;
-  }
-
-  // Agrega aquí tu número de WhatsApp real con código de país (Ej: 595981XXXXXX para Paraguay)
-  const telefonoNegocio = "595982968591"; // Reemplaza con tu número real
+window.enviarCarritoWhatsApp = function() {
+  if (carrito.length === 0) return;
+  const nroTelefono = "595982968591"; // <-- Aquí va tu número de WhatsApp de FEMA
   
-  let texto = "💖 *¡HOLA! QUIERO HACER UN PEDIDO* 💖\n";
-  texto += "┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈\n\n";
-  texto += "✨ *Mis elegidos de hoy:* \n\n";
-
+  let mensaje = `¡Hola, FEMA! ✨ Acabo de armar mi carrito de deseos en la web y me encantaría coordinar mi pedido de estas hermosuras:\n\n`;
+  
   let total = 0;
-
   carrito.forEach((item, index) => {
+    // Si el producto tiene una variante de color elegida, la sumamos al nombre
+    const colorDetalle = item.color ? ` (Color: ${item.color})` : '';
     const subtotal = item.precio * item.cantidad;
     total += subtotal;
     
-    texto += `🌸 *${item.nombre}*\n`;
-    texto += `  ✦ 🔢 Cantidad: *x${item.cantidad}*\n`;
-    texto += `  ✦ 💵 Precio: _${item.precio.toLocaleString('es-PY')}_ Gs.\n`;
-    texto += `  ✦ 💫 Subtotal: *${subtotal.toLocaleString('es-PY')}* Gs.\n\n`;
+    mensaje += `${index + 1} 🌸 *${item.nombre}*${colorDetalle}\n` +
+               `   Cantidad: ${item.cantidad} x ${formatGs(item.precio)}\n` +
+               `   Subtotal: ${formatGs(subtotal)}\n\n`;
   });
-
-  texto += "┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈┈\n";
-  texto += `⭐ *TOTAL DE MI COMPRA:* *${total.toLocaleString('es-PY')} Gs.*\n\n`;
-  texto += "💌 _¿Me confirman si tienen disponible para poder coordinar la entrega? ¡Muchas gracias!_ 💕";
   
-  const textoUrl = encodeURIComponent(texto);
-  const urlWhatsapp = `https://wa.me/${telefonoNegocio}?text=${textoUrl}`;
+  mensaje += `💖 *Total de mi pedido:* ${formatGs(total)}\n\n` +
+             `¿Me confirman si tienen disponibilidad para coordinar la entrega? ¡Muchas gracias! 💕`;
   
-  window.open(urlWhatsapp, '_blank');
+  const url = `https://wa.me/${nroTelefono}?text=${encodeURIComponent(mensaje)}`;
+  window.open(url, '_blank');
 };
-
+  
 </script>
 
 <!-- Botón Flotante del Carrito -->
