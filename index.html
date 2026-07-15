@@ -420,7 +420,32 @@ document.getElementById('clearFilters').addEventListener('click', ()=>{
   render();
 });
 
-loadJoyas();
+// Carga las joyas y verifica si se solicitó un ID específico por la URL
+loadJoyas().then(() => {
+  const urlParams = new URLSearchParams(window.location.search);
+  const productId = urlParams.get('id');
+  
+  if (productId) {
+    // Buscamos si la joya con ese ID realmente existe en nuestro catálogo cargado
+    const joyaEncontrada = joyas.find(j => j.id.toString() === productId.toString());
+    
+    if (joyaEncontrada) {
+      // Filtramos la grilla para mostrar únicamente esta joya
+      const area = document.getElementById('gridArea');
+      area.innerHTML = `
+        <div style="margin-bottom: 24px; text-align: left;">
+          <button onclick="window.location.href=window.location.pathname" class="facet-sm" style="padding: 8px 16px; font-size: 11px;">
+            ✨ Ver todo el catálogo
+          </button>
+        </div>
+        <div class="grid">${cardHtml(joyaEncontrada)}</div>
+      `;
+      
+      // Actualizamos el contador para reflejar que estamos viendo un detalle
+      document.getElementById('resultCount').textContent = `Mostrando detalle de: ${joyaEncontrada.nombre}`;
+    }
+  }
+});
 
 // --- LÓGICA DEL CARRITO DE COMPRAS CORREGIDA ---
 let carrito = [];
@@ -582,20 +607,25 @@ window.cambiarCantidad = function(id, cambio) {
 // --- REDIRECCIÓN ESTÉTICA, AMIGABLE Y FEMENINA A WHATSAPP ---
 window.enviarCarritoWhatsApp = function() {
   if (carrito.length === 0) return;
-  const nroTelefono = "595982968591"; // <-- Aquí va tu número de WhatsApp de FEMA
+  const nroTelefono = "595982968591"; // <-- Tu número de WhatsApp de FEMA
   
+  // Obtenemos la URL base de tu web de GitHub Pages de forma dinámica
+  const urlBaseWeb = window.location.origin + window.location.pathname;
+
   let mensaje = `¡Hola, FEMA! ✨ Acabo de armar mi carrito de deseos en la web y me encantaría coordinar mi pedido de estas hermosuras:\n\n`;
   
   let total = 0;
   carrito.forEach((item, index) => {
-    // Si el producto tiene una variante de color elegida, la sumamos al nombre
     const colorDetalle = item.color ? ` (Color: ${item.color})` : '';
     const subtotal = item.precio * item.cantidad;
     total += subtotal;
     
+    // Creamos el enlace directo al producto agregando su ID a la URL
+    const enlaceProducto = `${urlBaseWeb}?id=${item.id}`;
+    
     mensaje += `${index + 1} 🌸 *${item.nombre}*${colorDetalle}\n` +
                `   Cantidad: ${item.cantidad} x ${formatGs(item.precio)}\n` +
-               `   Subtotal: ${formatGs(subtotal)}\n\n`;
+               `   🔗 *Ver detalle:* ${enlaceProducto}\n\n`;
   });
   
   mensaje += `💖 *Total de mi pedido:* ${formatGs(total)}\n\n` +
@@ -635,9 +665,9 @@ window.enviarCarritoWhatsApp = function() {
       <span class="h5 mb-0 fw-bold text-success" id="total-carrito">0 Gs.</span>
     </div>
     <div class="d-grid gap-2">
-      <button type="button" class="btn btn-success btn-lg fw-bold" onclick="enviarWhatsApp()" style="font-size: 1rem; border-radius: 8px;">
-        🟢 Confirmar Pedido por WhatsApp
-      </button>
+<button type="button" class="btn btn-success btn-lg fw-bold" onclick="enviarCarritoWhatsApp()" style="font-size: 1rem; border-radius: 8px;">
+  🟢 Confirmar Pedido por WhatsApp
+</button>
       <button type="button" class="btn btn-outline-secondary btn-sm" data-bs-dismiss="offcanvas">
         Seguir comprando
       </button>
