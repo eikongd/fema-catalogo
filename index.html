@@ -310,6 +310,7 @@ window.changeActiveColorPro = function(btn, colorName, imgUrl, joyaId, index) {
   // 2. Guarda el color seleccionado en el botón de agregar al carrito
   const btnCarrito = card.querySelector('.btn-carrito-item');
   if(btnCarrito) btnCarrito.setAttribute('data-color', colorName);
+  if(btnCarrito) btnCarrito.setAttribute('data-precio', nuevoPrecio);
 
   // 3. Actualiza el enlace de compra directa para WhatsApp
   const btnComprar = card.querySelector('.comprar');
@@ -470,13 +471,14 @@ function cardHtml(j){
     colorsHtml = `<div class="color-variants"><span class="color-label">Color:</span>`;
     colorsHtml += coloresDisponibles.map((col, idx) => {
       const imgAsociada = imgs[idx] || firstImg;
-      // Guardamos los datos de oferta del color en atributos data- para leerlos con JS al hacer clic
-return `<span class="color-badge facet-sm ${idx === 0 ? 'active' : ''}" 
-              data-precio="${j.precio}"
-              data-anterior="${col.precio_anterior || ''}"
-              onclick="window.changeActiveColorPro(this, '${escapeHtml(col.nombre)}', '${imgAsociada.replace(/'/g,"\\'")}', '${j.id}', ${idx})">
-          ${escapeHtml(col.nombre)}
-        </span>`;
+
+// Guardamos los datos de oferta del color en atributos data- para leerlos con JS al hacer clic
+      return `<span class="color-badge facet-sm ${idx === 0 ? 'active' : ''}" 
+                    data-precio="${precioActual}"
+                    data-anterior="${col.precio_anterior || ''}"
+                    onclick="window.changeActiveColorPro(this, '${escapeHtml(col.nombre)}', '${imgAsociada.replace(/'/g,"\\'")}', '${j.id}', ${idx})">
+                ${escapeHtml(col.nombre)}
+              </span>`;
     }).join('');
     colorsHtml += `</div>`;
   }
@@ -637,7 +639,7 @@ window.agregarAlCarrito = function(joyaId) {
     carrito.push({
       id: j.id,
       nombre: j.nombre || 'Joya sin nombre',
-      precio: j.precio || 0,
+      precio: Number(btnCarrito ? btnCarrito.getAttribute('data-precio') : j.precio) || 0,
       imagen: imagenUrl,
       color: colorElegido,
       cantidad: 1
