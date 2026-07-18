@@ -296,12 +296,16 @@ window.changeActivePhoto = function(btn, imgUrl, joyaId, index) {
 }
 // Maneja la selección del color variant
 window.changeActiveColorPro = function(btn, colorName, imgUrl, joyaId, index) {
-  const card = btn.closest('.card');
+  // Asegurarnos de capturar el elemento span correcto si se hace clic en el texto
+  const badge = btn.closest('.color-badge');
+  if (!badge) return;
+
+  const card = badge.closest('.card');
   if (!card) return;
   
   // 1. Activa la variante visual del color (cambia la tarjetita activa)
   card.querySelectorAll('.color-badge').forEach(b => b.classList.remove('active'));
-  btn.classList.add('active');
+  badge.classList.add('active');
 
   // 2. Guarda el color seleccionado en el botón de agregar al carrito
   const btnCarrito = card.querySelector('.btn-carrito-item');
@@ -314,9 +318,9 @@ window.changeActiveColorPro = function(btn, colorName, imgUrl, joyaId, index) {
     if(j) btnComprar.href = buildWhatsAppLink(j, colorName);
   }
 
-  // 4. Leer los nuevos precios desde los atributos data del badge
-  const nuevoPrecio = Number(btn.getAttribute('data-precio')) || 0;
-  const precioAnterior = btn.getAttribute('data-anterior') ? Number(btn.getAttribute('data-anterior')) : null;
+  // 4. Leer los precios directo de los atributos data del badge
+  const nuevoPrecio = Number(badge.getAttribute('data-precio')) || 0;
+  const precioAnterior = badge.getAttribute('data-anterior') ? Number(badge.getAttribute('data-anterior')) : null;
 
   const oldPriceEl = card.querySelector('.old-price');
   const currPriceEl = card.querySelector('.current-price');
@@ -352,10 +356,8 @@ window.changeActiveColorPro = function(btn, colorName, imgUrl, joyaId, index) {
 
   // 6. Cambiar a la foto asociada a la variante
   if(imgUrl) {
-    // Intentamos buscar si existe la miniatura abajo para activarla
     const thumbTarget = card.querySelector(`.thumb[data-index="${index}"]`);
     if(thumbTarget) {
-      // Si usás la función global changeActivePhoto, la llamamos pasándole los datos
       if (typeof changeActivePhoto === 'function') {
         changeActivePhoto(thumbTarget, imgUrl, joyaId, index);
       } else {
@@ -368,7 +370,6 @@ window.changeActiveColorPro = function(btn, colorName, imgUrl, joyaId, index) {
         }
       }
     } else {
-      // Si no hay miniaturas, cambia directamente la foto principal de la tarjeta
       const mainImg = card.querySelector('.img-wrap');
       if(mainImg) {
         mainImg.style.backgroundImage = `url('${imgUrl.replace(/'/g,"\\'")}')`;
