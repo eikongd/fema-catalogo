@@ -378,20 +378,6 @@ window.changeActiveColorPro = function(btn, colorName, imgUrl, joyaId, index) {
   }
 };
 
-  // 6. Si esa variante tiene una imagen asociada, la mostramos
-  if(imgUrl) {
-    const thumbTarget = card.querySelector(`.thumb[data-index="${index}"]`);
-    if(thumbTarget) {
-      changeActivePhoto(thumbTarget, imgUrl, joyaId, index);
-    } else {
-      const mainImg = card.querySelector('.img-wrap');
-      if(mainImg) {
-        mainImg.style.backgroundImage = `url('${imgUrl}')`;
-        mainImg.setAttribute('data-active-index', index);
-      }
-    }
-  }
-};
 window.openGallery = function(joyaId, startIndex = 0) {
   const j = joyas.find(x => x.id.toString() === joyaId.toString());
   if(!j) return;
