@@ -472,11 +472,11 @@ function cardHtml(j){
       const imgAsociada = imgs[idx] || firstImg;
       // Guardamos los datos de oferta del color en atributos data- para leerlos con JS al hacer clic
 return `<span class="color-badge facet-sm ${idx === 0 ? 'active' : ''}" 
-                  data-precio="${j.precio}"
-                  data-anterior="${col.precio_anterior || ''}"
-                  onclick="changeActiveColorPro(this, '${escapeHtml(col.nombre)}', '${imgAsociada.replace(/'/g,"\\'")}', '${j.id}', ${idx})">
-              ${escapeHtml(col.nombre)}
-            </span>`;
+              data-precio="${j.precio}"
+              data-anterior="${col.precio_anterior || ''}"
+              onclick="window.changeActiveColorPro(this, '${escapeHtml(col.nombre)}', '${imgAsociada.replace(/'/g,"\\'")}', '${j.id}', ${idx})">
+          ${escapeHtml(col.nombre)}
+        </span>`;
     }).join('');
     colorsHtml += `</div>`;
   }
@@ -497,23 +497,24 @@ return `<span class="color-badge facet-sm ${idx === 0 ? 'active' : ''}"
     etiquetaHtml = `<div class="destacado" id="tag-descuento-${j.id}" style="display:none;"></div>`;
   }
 
-  // Renderizar bloque de precios dinámico
-  let contenedorPrecio = '';
-  if (precioAnteriorActual && Number(precioAnteriorActual) > Number(precioActual)) {
-    contenedorPrecio = `
-      <div class="price-container-${j.id}" style="border-top: 1px solid var(--linea); padding-top: 10px;">
-        <span class="old-price" style="font-size: 14px; text-decoration: line-through; color: var(--texto-suave); margin-right: 8px; font-style: normal;">
-          ${formatGs(precioAnteriorActual)}
-        </span>
-        <span class="current-price" style="font-weight: 500;">${formatGs(precioActual)}</span>
-      </div>`;
-  } else {
-    contenedorPrecio = `
-      <div class="price-container-${j.id}" style="border-top: 1px solid var(--linea); padding-top: 10px;">
-        <span class="old-price" style="font-size: 14px; text-decoration: line-through; color: var(--texto-suave); margin-right: 8px; font-style: normal; display:none;"></span>
-        <span class="current-price" style="font-weight: 500;">${formatGs(precioActual)}</span>
-      </div>`;
-  }
+
+// Renderizar bloque de precios dinámico
+let contenedorPrecio = '';
+if (precioAnteriorActual && Number(precioAnteriorActual) > Number(precioActual)) {
+  contenedorPrecio = `
+    <div class="price" style="border-top: 1px solid var(--linea); padding-top: 10px; margin-top: auto; font-family:'Cormorant Garamond',serif; font-style:italic; font-size:22px; color:var(--oro-oscuro);">
+      <span class="old-price" style="font-size: 14px; text-decoration: line-through; color: var(--texto-suave); margin-right: 8px; font-style: normal;">
+        ${formatGs(precioAnteriorActual)}
+      </span>
+      <span class="current-price" style="font-weight: 500;">${formatGs(precioActual)}</span>
+    </div>`;
+} else {
+  contenedorPrecio = `
+    <div class="price" style="border-top: 1px solid var(--linea); padding-top: 10px; margin-top: auto; font-family:'Cormorant Garamond',serif; font-style:italic; font-size:22px; color:var(--oro-oscuro);">
+      <span class="old-price" style="font-size: 14px; text-decoration: line-through; color: var(--texto-suave); margin-right: 8px; font-style: normal; display:none;"></span>
+      <span class="current-price" style="font-weight: 500;">${formatGs(precioActual)}</span>
+    </div>`;
+}
 
   return `
   <div class="card facet">
