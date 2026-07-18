@@ -92,7 +92,37 @@
 .offcanvas:not(.show) {
   display: none !important;
 }
-
+/* ==========================================
+     NUEVOS ESTILOS PARA FILAS HORIZONTALES 
+     ========================================== */
+  .category-row {
+    margin-bottom: 40px;
+  }
+  .category-row h3.category-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 26px;
+    font-style: italic;
+    font-weight: 500;
+    color: var(--oro-oscuro);
+    margin-bottom: 16px;
+    border-bottom: 1px solid var(--linea);
+    padding-bottom: 8px;
+  }
+  .horizontal-scroll-wrapper {
+    display: flex;
+    gap: 20px;
+    overflow-x: auto;
+    scroll-behavior: smooth;
+    padding-bottom: 15px;
+    scrollbar-width: none; /* Oculta barra en Firefox */
+  }
+  .horizontal-scroll-wrapper::-webkit-scrollbar {
+    display: none; /* Oculta barra en Chrome/Safari */
+  }
+  .horizontal-scroll-wrapper .card {
+    width: 280px;
+    flex-shrink: 0;
+  }
 </style>
 </head>
 <body>
@@ -214,17 +244,44 @@ function getFiltered(){
 function render(){
   const list = getFiltered();
   const area = document.getElementById('gridArea');
+  
+  // Actualizar contador
   document.getElementById('resultCount').textContent =
-    joyas.length===0 ? 'Aún no hay piezas cargadas' : `${list.length} de ${joyas.length} pieza${joyas.length===1?'':'s'}`;
+    joyas.length === 0 ? 'Aún no hay piezas cargadas' : `${list.length} de ${joyas.length} pieza${joyas.length === 1 ? '' : 's'}`;
 
-  if(list.length===0){
+  if(list.length === 0){
     area.innerHTML = `<div class="empty">
-      <h3>${joyas.length===0 ? 'El catálogo está vacío por el momento' : 'Sin resultados'}</h3>
-      <p>${joyas.length===0 ? 'Volvé a visitarnos pronto.' : 'Probá ajustando los filtros de búsqueda.'}</p>
+      <h3>${joyas.length === 0 ? 'El catálogo está vacío por el momento' : 'Sin resultados'}</h3>
+      <p>${joyas.length === 0 ? 'Volvé a visitarnos pronto.' : 'Probá ajustando los filtros de búsqueda.'}</p>
     </div>`;
     return;
   }
-  area.innerHTML = `<div class="grid">${list.map(cardHtml).join('')}</div>`;
+
+  // 1. Agrupar los productos filtrados por su categoría
+  const categoriasAgrupadas = {};
+  list.forEach(j => {
+    const cat = j.categoria || 'Otros';
+    if (!categoriasAgrupadas[cat]) {
+      categoriasAgrupadas[cat] = [];
+    }
+    categoriasAgrupadas[cat].push(j);
+  });
+
+  // 2. Construir el HTML estructurado por filas horizontales
+  let htmlFinal = '';
+  
+  for (const [nombreCategoria, productos] of Object.entries(categoriasAgrupadas)) {
+    htmlFinal += `
+      <div class="category-row">
+        <h3 class="category-title">✨ Colección de ${escapeHtml(nombreCategoria)}</h3>
+        <div class="horizontal-scroll-wrapper">
+          ${productos.map(cardHtml).join('')}
+        </div>
+      </div>
+    `;
+  }
+
+  area.innerHTML = htmlFinal;
 }
 
 // Cambia la foto principal visible en la tarjeta al dar clic en una miniatura
