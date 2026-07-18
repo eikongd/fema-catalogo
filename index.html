@@ -470,12 +470,12 @@ function cardHtml(j){
     colorsHtml += coloresDisponibles.map((col, idx) => {
       const imgAsociada = imgs[idx] || firstImg;
       // Guardamos los datos de oferta del color en atributos data- para leerlos con JS al hacer clic
-      return `<span class="color-badge facet-sm ${idx === 0 ? 'active' : ''}" 
-                    data-precio="${col.precio_extraordinario || j.precio}"
-                    data-anterior="${col.precio_anterior || ''}"
-                    onclick="changeActiveColorPro(this, '${escapeHtml(col.nombre)}', '${imgAsociada.replace(/'/g,"\\'")}', '${j.id}', ${idx})">
-                ${escapeHtml(col.nombre)}
-              </span>`;
+return `<span class="color-badge facet-sm ${idx === 0 ? 'active' : ''}" 
+                  data-precio="${j.precio}"
+                  data-anterior="${col.precio_anterior || ''}"
+                  onclick="changeActiveColorPro(this, '${escapeHtml(col.nombre)}', '${imgAsociada.replace(/'/g,"\\'")}', '${j.id}', ${idx})">
+              ${escapeHtml(col.nombre)}
+            </span>`;
     }).join('');
     colorsHtml += `</div>`;
   }
