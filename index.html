@@ -267,8 +267,7 @@ window.changeActiveColorPro = function(btn, colorName, imgUrl, joyaId, index) {
     mainImg.style.backgroundImage = `url('${imgUrl}')`;
     mainImg.setAttribute('data-active-index', index);
   }
-}
-
+}; // <-- Esta llave ahora cierra la función perfectamente sin dejar nada flotando
 window.openGallery = function(joyaId, startIndex = 0) {
   const j = joyas.find(x => x.id.toString() === joyaId.toString());
   if(!j) return;
