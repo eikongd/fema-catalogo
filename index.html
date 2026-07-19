@@ -296,36 +296,67 @@ window.changeActivePhoto = function(btn, imgUrl, joyaId, index) {
 }
 // Maneja la selección del color variant
 window.changeActiveColorPro = function(btn, colorName, imgUrl, joyaId, index) {
-  // Asegurarnos de capturar el elemento span correcto si se hace clic en el texto
-  const badge = btn.closest('.color-badge');
+  // 1. Asegurarnos de capturar el elemento badge correcto (el botón mismo o su contenedor)
+  const badge = btn.closest('.color-badge') || btn;
   if (!badge) return;
 
   const card = badge.closest('.card');
   if (!card) return;
-  
-  // 1. Activa la variante visual del color (cambia la tarjetita activa)
+
+  // 2. Activar la variante visual del color (cambia la tarjetita activa)
   card.querySelectorAll('.color-badge').forEach(b => b.classList.remove('active'));
   badge.classList.add('active');
 
-  // 2. Guarda el color seleccionado en el botón de agregar al carrito
-  const btnCarrito = card.querySelector('.btn-carrito-item');
-  if(btnCarrito) btnCarrito.setAttribute('data-color', colorName);
-  if(btnCarrito) btnCarrito.setAttribute('data-precio', nuevoPrecio);
-
-  // 3. Actualiza el enlace de compra directa para WhatsApp
-  const btnComprar = card.querySelector('.comprar');
-  if(btnComprar) {
-    const j = joyas.find(x => x.id.toString() === joyaId.toString());
-    if(j) btnComprar.href = buildWhatsAppLink(j, colorName);
-  }
-
-  // 4. Leer los precios directo de los atributos data del badge
+  // 3. LEER LOS PRECIOS PRIMERO (Solución al error de inicialización)
   const nuevoPrecio = Number(badge.getAttribute('data-precio')) || 0;
   const precioAnterior = badge.getAttribute('data-anterior') ? Number(badge.getAttribute('data-anterior')) : null;
 
+  // 4. Guarda el color seleccionado en el botón de agregar al carrito
+  const btnCarrito = card.querySelector('.btn-carrito-item');
+  if (btnCarrito) {
+    btnCarrito.setAttribute('data-color', colorName);
+    btnCarrito.setAttribute('data-precio', nuevoPrecio);
+  }
+
+  // 5. Actualiza el enlace de compra directa para WhatsApp
+  const btnComprar = card.querySelector('.comprar');
+  if (btnComprar) {
+    const j = joyas.find(x => x.id.toString() === joyaId.toString());
+    if (j) btnComprar.href = buildWhatsAppLink(j, colorName);
+  }
+
+  // 6. Actualizar los elementos de texto del precio en la interfaz
   const oldPriceEl = card.querySelector('.old-price');
   const currPriceEl = card.querySelector('.current-price');
-  const tagEl = document.getElementById(`tag-descuento-${joyaId}`);
+  const tagF1 = document.getElementById(`tag-descuento-${joyaId}`);
+
+  // Actualizar precio actual
+  if (currPriceEl) {
+    currPriceEl.textContent = formatGs(nuevoPrecio);
+  }
+
+  // Actualizar precio anterior y etiqueta de oferta (%)
+  if (oldPriceEl) {
+    if (precioAnterior && precioAnterior > nuevoPrecio) {
+      oldPriceEl.textContent = formatGs(precioAnterior);
+      oldPriceEl.style.display = 'inline';
+      
+      // Si tenés la etiqueta de descuento visible, recalculamos el % en tiempo real
+      if (tagF1) {
+        const porcentaje = Math.round(((precioAnterior - nuevoPrecio) / precioAnterior) * 100);
+        tagF1.textContent = `${porcentaje}% OFF`;
+        tagF1.style.display = 'block';
+      }
+    } else {
+      oldPriceEl.style.display = 'none';
+      if (tagF1 && !j?.destacado) { 
+        tagF1.style.display = 'none'; 
+      } else if (tagF1 && j?.destacado) {
+        tagF1.textContent = 'Destacada';
+      }
+    }
+  }
+}
 
   // 5. Actualizar los textos de precio dinámicamente en pantalla
   if(currPriceEl) currPriceEl.textContent = formatGs(nuevoPrecio);
@@ -458,29 +489,31 @@ function cardHtml(j){
   // Filtrar solo los colores que estén disponibles para la venta
   const coloresDisponibles = coloresLista.filter(c => c.disponible !== false);
 
-  let colorsHtml = '';
+let colorsHtml = '';
   let colorInicial = '';
   let precioActual = j.precio;
   let precioAnteriorActual = null;
 
   if (coloresDisponibles.length > 0) {
     colorInicial = coloresDisponibles[0].nombre;
-    precioActual = coloresDisponibles[0].precio_extraordinario || j.precio; 
-    precioAnteriorActual = coloresDisponibles[0].precio_anterior;
+    precioActual = coloresDisponibles[0].precio_extraordinario || j.precio;
+    precioAnteriorActual = coloresDisponibles[0].precio_anterior || null;
 
     colorsHtml = `<div class="color-variants"><span class="color-label">Color:</span>`;
     colorsHtml += coloresDisponibles.map((col, idx) => {
       const imgAsociada = imgs[idx] || firstImg;
+      
+      // SOLUCIÓN: Calcular el precio específico de ESTA variante en la iteración
+      const precioEstaVariante = col.precio_extraordinario || j.precio;
+      const precioAnteriorEstaVariante = col.precio_anterior || '';
 
-// Guardamos los datos de oferta del color en atributos data- para leerlos con JS al hacer clic
       return `<span class="color-badge facet-sm ${idx === 0 ? 'active' : ''}" 
-                    data-precio="${precioActual}"
-                    data-anterior="${col.precio_anterior || ''}"
+                    data-precio="${precioEstaVariante}" 
+                    data-anterior="${precioAnteriorEstaVariante}"
                     onclick="window.changeActiveColorPro(this, '${escapeHtml(col.nombre)}', '${imgAsociada.replace(/'/g,"\\'")}', '${j.id}', ${idx})">
                 ${escapeHtml(col.nombre)}
               </span>`;
-    }).join('');
-    colorsHtml += `</div>`;
+    }).join('') + `</div>`;
   }
 
   // Si no hay ningún color disponible en la lista pero la lista no está vacía, ocultamos el producto
