@@ -386,21 +386,6 @@ window.changeActiveColorPro = function(btn, colorName, imgUrl, joyaId, index) {
     }
   }
 
-  // 6. Cambiar a la foto asociada a la variante
-  if(imgUrl) {
-    const thumbTarget = card.querySelector(`.thumb[data-index="${index}"]`);
-    if(thumbTarget) {
-      if (typeof changeActivePhoto === 'function') {
-        changeActivePhoto(thumbTarget, imgUrl, joyaId, index);
-      } else {
-        card.querySelectorAll('.thumb').forEach(t => t.classList.remove('active'));
-        thumbTarget.classList.add('active');
-        const mainImg = card.querySelector('.img-wrap');
-        if(mainImg) {
-          mainImg.style.backgroundImage = `url('${imgUrl.replace(/'/g,"\\'")}')`;
-          mainImg.setAttribute('data-active-index', index);
-        }
-      }
     } else {
       const mainImg = card.querySelector('.img-wrap');
       if(mainImg) {
