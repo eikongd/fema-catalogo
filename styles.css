@@ -285,20 +285,39 @@
   /* ==========================================================================
      6. ADAPTABILIDAD A PANTALLAS PEQUEÑAS (RESPONSIVE / MÓVIL)
      ========================================================================== */
-  @media (max-width: 768px) {
-    .filters {
-      grid-template-columns: 1fr 1fr;
-      gap: 12px;
-      padding: 16px;
-    }
-    
-    /* El buscador pasa a ocupar toda la primera fila */
-    .filters > div:first-child,
-    .filters input[type="text"] {
-      grid-column: 1 / -1;
-    }
+/* ==========================================================================
+   6. ADAPTABILIDAD A PANTALLAS PEQUEÑAS (RESPONSIVE / MÓVIL)
+   ========================================================================== */
+
+/* Ajustes para los filtros en el Offcanvas móvil */
+@media (max-width: 767.98px) {
+  .offcanvas-md.offcanvas-start {
+    width: 300px;
+  }
+  
+  .filters {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    padding: 16px;
   }
 
+  .filters > div {
+    width: 100%;
+  }
+
+  .filters input, 
+  .filters select {
+    width: 100%;
+  }
+}
+
+/* Ajustes visuales extra para móviles pequeños */
+@media (max-width: 480px) {
+  .wordmark {
+    font-size: 42px;
+  }
+}
   @media (max-width: 480px) {
     .filters {
       grid-template-columns: 1fr;
