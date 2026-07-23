@@ -32,11 +32,25 @@
       </div>
     </div>
 
-    <!-- Botón para abrir filtros en Móvil -->
+<!-- Botón para abrir filtros en Móvil -->
 <div class="d-md-none mb-3 px-3">
-  <button class="btn btn-outline-dark w-100 d-flex justify-content-between align-items-center" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasFiltros">
-    <span>🎛️ Filtrar y Ordenar</span>
-    <span class="badge bg-secondary" id="mobileFilterBadge" style="display: none;">Activos</span>
+  <button class="mobile-filter-btn" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasFiltros">
+    <!-- Icono de deslizadores finos -->
+    <svg class="mobile-filter-icon" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round">
+      <line x1="4" y1="21" x2="4" y2="14"></line>
+      <line x1="4" y1="10" x2="4" y2="3"></line>
+      <line x1="12" y1="21" x2="12" y2="12"></line>
+      <line x1="12" y1="8" x2="12" y2="3"></line>
+      <line x1="20" y1="21" x2="20" y2="16"></line>
+      <line x1="20" y1="12" x2="20" y2="3"></line>
+      <line x1="1" y1="14" x2="7" y2="14"></line>
+      <line x1="9" y1="8" x2="15" y2="8"></line>
+      <line x1="17" y1="16" x2="23" y2="16"></line>
+    </svg>
+    
+    <span>Filtrar y Ordenar</span>
+    
+    <span class="filter-badge-dot" id="mobileFilterBadge" style="display: none;"></span>
   </button>
 </div>
 
