@@ -53,7 +53,7 @@ async function loadJoyas() {
     return;
   }
 
-  // Mostrar 4 tarjetas esqueleto mientras carga
+  // Mostrar tarjetas esqueleto mientras carga
   const gridArea = document.getElementById('gridArea');
   gridArea.innerHTML = `
     <div class="category-row">
@@ -75,11 +75,17 @@ async function loadJoyas() {
 }
 
 function getFiltered() {
-  const q = document.getElementById('fSearch').value.trim().toLowerCase();
-  const cat = document.getElementById('fCategoria').value;
-  const mat = document.getElementById('fMaterial').value;
-  const pied = document.getElementById('fPiedra').value;
-  const orden = document.getElementById('fOrden').value;
+  const searchEl = document.getElementById('fSearch');
+  const catEl = document.getElementById('fCategoria');
+  const matEl = document.getElementById('fMaterial');
+  const piedEl = document.getElementById('fPiedra');
+  const ordenEl = document.getElementById('fOrden');
+
+  const q = searchEl ? searchEl.value.trim().toLowerCase() : '';
+  const cat = catEl ? catEl.value : '';
+  const mat = matEl ? matEl.value : '';
+  const pied = piedEl ? piedEl.value : '';
+  const orden = ordenEl ? ordenEl.value : 'reciente';
 
   let list = joyas.filter(j => {
     const nombreMatch = j.nombre.toLowerCase().includes(q);
@@ -97,6 +103,24 @@ function getFiltered() {
   else list.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
 
   return list;
+}
+
+function actualizarBadgeFiltrosMovil() {
+  const badge = document.getElementById('mobileFilterBadge');
+  if (!badge) return;
+
+  const searchEl = document.getElementById('fSearch');
+  const catEl = document.getElementById('fCategoria');
+  const matEl = document.getElementById('fMaterial');
+  const piedEl = document.getElementById('fPiedra');
+
+  const q = searchEl ? searchEl.value : '';
+  const cat = catEl ? catEl.value : '';
+  const mat = matEl ? matEl.value : '';
+  const pied = piedEl ? piedEl.value : '';
+
+  const tieneFiltrosActivos = q || cat || mat || pied;
+  badge.style.display = tieneFiltrosActivos ? 'inline-block' : 'none';
 }
 
 /* ==========================================================================
@@ -174,12 +198,15 @@ function cardHtml(j) {
 function render() {
   const list = getFiltered();
   const area = document.getElementById('gridArea');
+  const countEl = document.getElementById('resultCount');
   
-  document.getElementById('resultCount').textContent =
-    joyas.length === 0 ? 'Aún no hay piezas cargadas' : `${list.length} de ${joyas.length} pieza${joyas.length === 1 ? '' : 's'}`;
+  if (countEl) {
+    countEl.textContent = joyas.length === 0 ? 'Aún no hay piezas cargadas' : `${list.length} de ${joyas.length} pieza${joyas.length === 1 ? '' : 's'}`;
+  }
 
   if (list.length === 0) {
     area.innerHTML = `<div class="empty"><h3>Sin resultados</h3></div>`;
+    actualizarBadgeFiltrosMovil();
     return;
   }
 
@@ -203,8 +230,11 @@ function render() {
   }
   area.innerHTML = htmlFinal;
 
-  // Activa el desplazamiento con rueda en PC
+  // Activa el desplazamiento horizontal con rueda en PC
   activarScrollHorizontalMouse();
+  
+  // Actualiza el indicador visual del botón de filtros en móviles
+  actualizarBadgeFiltrosMovil();
 }
 
 /* ==========================================================================
@@ -303,7 +333,6 @@ window.openGallery = function(joyaId, startIndex = 0) {
 /* ==========================================================================
    6. GESTIÓN DEL CARRITO DE COMPRAS Y NOTIFICACIONES
    ========================================================================== */
-
 function mostrarNotificacion(mensaje) {
   const toastEl = document.getElementById('toastCarrito');
   const toastMsg = document.getElementById('toastMensaje');
@@ -378,7 +407,7 @@ window.mostrarCarrito = function() {
   }
   if (totalElen) totalElen.innerText = formatGs(total);
 
-  // Instancia segura de Bootstrap Offcanvas
+  // Instancia segura de Bootstrap Offcanvas para evitar el fondo oscuro duplicado
   let bsOffcanvas = bootstrap.Offcanvas.getInstance(offcanvasElement);
   if (!bsOffcanvas) {
     bsOffcanvas = new bootstrap.Offcanvas(offcanvasElement);
@@ -431,13 +460,13 @@ function activarScrollHorizontalMouse() {
    8. EVENT LISTENERS E INICIALIZACIÓN DE LA PÁGINA
    ========================================================================== */
 document.addEventListener('DOMContentLoaded', () => {
-  // Buscador con debounce de 300ms
+  // Buscador en tiempo real con debounce (300ms)
   const searchInput = document.getElementById('fSearch');
   if (searchInput) {
     searchInput.addEventListener('input', debounce(() => render(), 300));
   }
 
-  // Resto de los filtros (categoría, material, etc.) responden al instante
+  // Filtros desplegables
   ['fCategoria', 'fMaterial', 'fPiedra', 'fOrden'].forEach(id => {
     const el = document.getElementById(id);
     if (el) {
@@ -449,16 +478,23 @@ document.addEventListener('DOMContentLoaded', () => {
   const clearBtn = document.getElementById('clearFilters');
   if (clearBtn) {
     clearBtn.addEventListener('click', () => {
-      document.getElementById('fSearch').value = '';
-      document.getElementById('fCategoria').value = '';
-      document.getElementById('fMaterial').value = '';
-      document.getElementById('fPiedra').value = '';
-      document.getElementById('fOrden').value = 'reciente';
+      const s = document.getElementById('fSearch');
+      const c = document.getElementById('fCategoria');
+      const m = document.getElementById('fMaterial');
+      const p = document.getElementById('fPiedra');
+      const o = document.getElementById('fOrden');
+
+      if (s) s.value = '';
+      if (c) c.value = '';
+      if (m) m.value = '';
+      if (p) p.value = '';
+      if (o) o.value = 'reciente';
+
       render();
     });
   }
 
-  // Cargar joyas...
+  // Cargar joyas e inspeccionar parámetros URL (para compartir link directo de producto)
   loadJoyas().then(() => {
     const urlParams = new URLSearchParams(window.location.search);
     const productId = urlParams.get('id');
