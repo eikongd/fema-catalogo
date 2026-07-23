@@ -1,16 +1,16 @@
 /* ==========================================================================
    1. CONFIGURACIÓN Y CLIENTE SUPABASE
    ========================================================================== */
-const SUPABASE_URL = 'https://jjoibdpsoahybjnwfewz.supabase.co';
-const SUPABASE_ANON_KEY = 'sb_publishable_a0HQkFV6Cdmdmk4y6qRE-g_5IlBM7RG';
-const WHATSAPP_NUMBER = '595982968591';
+window.SUPABASE_URL = window.SUPABASE_URL || 'https://jjoibdpsoahybjnwfewz.supabase.co';
+window.SUPABASE_ANON_KEY = window.SUPABASE_ANON_KEY || 'sb_publishable_a0HQkFV6Cdmdmk4y6qRE-g_5IlBM7RG';
+window.WHATSAPP_NUMBER = window.WHATSAPP_NUMBER || '595982968591';
 
-let joyas = [];
-let carrito = [];
-let supabaseClient = null;
+var joyas = joyas || [];
+var carrito = carrito || [];
+var supabaseClient = supabaseClient || null;
 
-if (SUPABASE_URL && SUPABASE_ANON_KEY && window.supabase) {
-  supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+if (window.SUPABASE_URL && window.SUPABASE_ANON_KEY && window.supabase && !supabaseClient) {
+  supabaseClient = window.supabase.createClient(window.SUPABASE_URL, window.SUPABASE_ANON_KEY);
 }
 
 /* ==========================================================================
@@ -32,7 +32,7 @@ function buildWhatsAppLink(j, colorSeleccionado = '') {
                   `🌸 *Producto:* ${j.nombre}${detalleColor}\n` +
                   `✨ *Precio:* ${formatGs(j.precio)}\n\n` +
                   `¡Muchísimas gracias! 💕`;
-  return `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(mensaje)}`;
+  return `https://wa.me/${window.WHATSAPP_NUMBER}?text=${encodeURIComponent(mensaje)}`;
 }
 
 /* ==========================================================================
@@ -279,12 +279,15 @@ window.openGallery = function(joyaId, startIndex = 0) {
 };
 
 /* ==========================================================================
-   6. GESTIÓN DEL CARRITO DE COMPRAS
+   6. GESTIÓN DEL CARRITO DE COMPRAS Y NOTIFICACIONES
    ========================================================================== */
 
 function mostrarNotificacion(mensaje) {
   const toastEl = document.getElementById('toastCarrito');
-  document.getElementById('toastMensaje').innerHTML = mensaje;
+  const toastMsg = document.getElementById('toastMensaje');
+  if (!toastEl || !toastMsg) return;
+
+  toastMsg.innerHTML = mensaje;
   const toast = new bootstrap.Toast(toastEl, { delay: 2500 });
   toast.show();
 }
@@ -306,7 +309,7 @@ window.agregarAlCarrito = function(joyaId) {
     carrito.push({ id: j.id, nombre: j.nombre, precio: precioElegido, imagen: imagenUrl, color: colorElegido, cantidad: 1 });
   }
   actualizarContadorCarrito();
-  mostrarNotificacion(`✨ <b>${j.nombre}</b> se agregó al carrito`);
+  mostrarNotificacion(`✨ <b>${escapeHtml(j.nombre)}</b> se agregó al carrito`);
 };
 
 function actualizarContadorCarrito() {
@@ -337,19 +340,30 @@ window.mostrarCarrito = function() {
       fila.className = 'd-flex align-items-center justify-content-between mb-3 pb-3 border-bottom';
       fila.innerHTML = `
         <div class="d-flex align-items-center" style="max-width: 60%;">
-          <img src="${item.imagen}" style="width: 50px; height: 50px; object-fit: cover; margin-right: 12px;">
-          <div><h6>${item.nombre}</h6><small>${item.color ? 'Color: ' + item.color : ''}</small></div>
+          <img src="${item.imagen}" style="width: 50px; height: 50px; object-fit: cover; margin-right: 12px; border-radius: 6px;">
+          <div>
+            <h6 class="mb-0" style="font-size: 14px;">${escapeHtml(item.nombre)}</h6>
+            <small class="text-muted">${item.color ? 'Color: ' + escapeHtml(item.color) : ''}</small>
+          </div>
         </div>
-        <div>
-          <button class="btn btn-sm btn-light" onclick="cambiarCantidad('${item.id}', '${item.color}', -1)">-</button>
-          <span>${item.cantidad}</span>
-          <button class="btn btn-sm btn-light" onclick="cambiarCantidad('${item.id}', '${item.color}', 1)">+</button>
+        <div class="d-flex align-items-center gap-2">
+          <button class="btn btn-sm btn-outline-secondary px-2" onclick="cambiarCantidad('${item.id}', '${item.color}', -1)">-</button>
+          <span class="fw-bold">${item.cantidad}</span>
+          <button class="btn btn-sm btn-outline-secondary px-2" onclick="cambiarCantidad('${item.id}', '${item.color}', 1)">+</button>
         </div>`;
       lista.appendChild(fila);
     });
   }
-  if (totalElen) totalElen.innerText = total.toLocaleString('es-PY') + ' Gs.';
-  new bootstrap.Offcanvas(offcanvasElement).show();
+  if (totalElen) totalElen.innerText = formatGs(total);
+
+  // Instancia segura de Bootstrap Offcanvas
+  let bsOffcanvas = bootstrap.Offcanvas.getInstance(offcanvasElement);
+  if (!bsOffcanvas) {
+    bsOffcanvas = new bootstrap.Offcanvas(offcanvasElement);
+  }
+  if (!offcanvasElement.classList.contains('show')) {
+    bsOffcanvas.show();
+  }
 };
 
 window.cambiarCantidad = function(id, color, cambio) {
@@ -373,7 +387,7 @@ window.enviarCarritoWhatsApp = function() {
     mensaje += `${index + 1} 🌸 *${item.nombre}* ${item.color ? '(' + item.color + ')' : ''}\n   Cant: ${item.cantidad} x ${formatGs(item.precio)}\n   🔗 ${urlBaseWeb}?id=${item.id}\n\n`;
   });
   mensaje += `💖 *Total:* ${formatGs(total)}`;
-  window.open(`https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(mensaje)}`, '_blank');
+  window.open(`https://wa.me/${window.WHATSAPP_NUMBER}?text=${encodeURIComponent(mensaje)}`, '_blank');
 };
 
 /* ==========================================================================
