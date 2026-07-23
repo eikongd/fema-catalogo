@@ -16,6 +16,15 @@ if (window.SUPABASE_URL && window.SUPABASE_ANON_KEY && window.supabase && !supab
 /* ==========================================================================
    2. FUNCIONES DE UTILIDAD Y COMPLEMENTOS
    ========================================================================== */
+// Retarda la ejecución de una función hasta que el usuario deje de tipear
+function debounce(func, wait = 300) {
+  let timeout;
+  return function(...args) {
+    clearTimeout(timeout);
+    timeout = setTimeout(() => func.apply(this, args), wait);
+  };
+}
+
 function formatGs(n) { 
   return 'Gs. ' + Number(n).toLocaleString('es-PY'); 
 }
@@ -43,9 +52,22 @@ async function loadJoyas() {
     document.getElementById('gridArea').innerHTML = `<div class="setup"><h3>Conectá tu base de datos</h3></div>`;
     return;
   }
+
+  // Mostrar 4 tarjetas esqueleto mientras carga
+  const gridArea = document.getElementById('gridArea');
+  gridArea.innerHTML = `
+    <div class="category-row">
+      <div class="horizontal-scroll-wrapper" style="gap: 16px;">
+        <div class="skeleton-card" style="min-width: 260px;"></div>
+        <div class="skeleton-card" style="min-width: 260px;"></div>
+        <div class="skeleton-card" style="min-width: 260px;"></div>
+        <div class="skeleton-card" style="min-width: 260px;"></div>
+      </div>
+    </div>`;
+
   const { data, error } = await supabaseClient.from('joyas').select('*').order('created_at', { ascending: false });
   if (error) {
-    document.getElementById('gridArea').innerHTML = `<div class="setup"><h3>Error</h3><p>${error.message}</p></div>`;
+    gridArea.innerHTML = `<div class="setup"><h3>Error</h3><p>${error.message}</p></div>`;
     return;
   }
   joyas = data || [];
@@ -409,15 +431,21 @@ function activarScrollHorizontalMouse() {
    8. EVENT LISTENERS E INICIALIZACIÓN DE LA PÁGINA
    ========================================================================== */
 document.addEventListener('DOMContentLoaded', () => {
-  // Filtros
-  ['fSearch', 'fCategoria', 'fMaterial', 'fPiedra', 'fOrden'].forEach(id => {
+  // Buscador con debounce de 300ms
+  const searchInput = document.getElementById('fSearch');
+  if (searchInput) {
+    searchInput.addEventListener('input', debounce(() => render(), 300));
+  }
+
+  // Resto de los filtros (categoría, material, etc.) responden al instante
+  ['fCategoria', 'fMaterial', 'fPiedra', 'fOrden'].forEach(id => {
     const el = document.getElementById(id);
     if (el) {
-      el.addEventListener('input', render);
       el.addEventListener('change', render);
     }
   });
 
+  // Limpiar filtros
   const clearBtn = document.getElementById('clearFilters');
   if (clearBtn) {
     clearBtn.addEventListener('click', () => {
@@ -430,7 +458,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // Cargar Joyas y evaluar parámetros URL (producto específico)
+  // Cargar joyas...
   loadJoyas().then(() => {
     const urlParams = new URLSearchParams(window.location.search);
     const productId = urlParams.get('id');
