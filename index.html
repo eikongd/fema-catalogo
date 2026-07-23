@@ -69,6 +69,32 @@
   .horizontal-scroll-wrapper { display: flex; gap: 20px; overflow-x: auto; scroll-behavior: smooth; padding-bottom: 15px; scrollbar-width: none; }
   .horizontal-scroll-wrapper::-webkit-scrollbar { display: none; }
   .horizontal-scroll-wrapper .card { width: 280px; flex-shrink: 0; }
+  /* Botón Flotante de Instagram */
+.btn-flotante-ig {
+  position: fixed;
+  bottom: 85px; /* Se posiciona justo arriba del botón flotante del carrito */
+  right: 20px;
+  width: 48px;
+  height: 48px;
+  background-color: #fff;
+  color: var(--rosa-texto, #A85A70);
+  border: 1px solid var(--rosa-fuerte, #C97C90);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  z-index: 99;
+  transition: transform 0.2s ease, background-color 0.2s ease, color 0.2s ease;
+  text-decoration: none;
+}
+
+.btn-flotante-ig:hover {
+  transform: translateY(-3px);
+  background-color: var(--bg-soft, #FBF5F1);
+  color: var(--oro-oscuro, #8F7238);
+  border-color: var(--oro, #C6A05F);
+}
 </style>
 </head>
 <body>
