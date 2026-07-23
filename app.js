@@ -35,14 +35,6 @@ function buildWhatsAppLink(j, colorSeleccionado = '') {
   return `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(mensaje)}`;
 }
 
-function mostrarNotificacion(mensaje) {
-  const toastEl = document.getElementById('toastCarrito');
-  document.getElementById('toastMensaje').innerHTML = mensaje;
-  const toast = new bootstrap.Toast(toastEl, { delay: 2500 });
-  toast.show();
-}
-
-
 /* ==========================================================================
    3. CONSULTA Y FILTRADO DE DATOS
    ========================================================================== */
@@ -289,6 +281,14 @@ window.openGallery = function(joyaId, startIndex = 0) {
 /* ==========================================================================
    6. GESTIÓN DEL CARRITO DE COMPRAS
    ========================================================================== */
+
+function mostrarNotificacion(mensaje) {
+  const toastEl = document.getElementById('toastCarrito');
+  document.getElementById('toastMensaje').innerHTML = mensaje;
+  const toast = new bootstrap.Toast(toastEl, { delay: 2500 });
+  toast.show();
+}
+
 window.agregarAlCarrito = function(joyaId) {
   const j = joyas.find(x => x.id.toString() === joyaId.toString());
   if (!j) return;
