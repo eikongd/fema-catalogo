@@ -35,6 +35,14 @@ function buildWhatsAppLink(j, colorSeleccionado = '') {
   return `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(mensaje)}`;
 }
 
+function mostrarNotificacion(mensaje) {
+  const toastEl = document.getElementById('toastCarrito');
+  document.getElementById('toastMensaje').innerHTML = mensaje;
+  const toast = new bootstrap.Toast(toastEl, { delay: 2500 });
+  toast.show();
+}
+
+
 /* ==========================================================================
    3. CONSULTA Y FILTRADO DE DATOS
    ========================================================================== */
@@ -298,7 +306,7 @@ window.agregarAlCarrito = function(joyaId) {
     carrito.push({ id: j.id, nombre: j.nombre, precio: precioElegido, imagen: imagenUrl, color: colorElegido, cantidad: 1 });
   }
   actualizarContadorCarrito();
-  alert(`¡${j.nombre} agregado!`);
+  mostrarNotificacion(`✨ <b>${j.nombre}</b> se agregó al carrito`);
 };
 
 function actualizarContadorCarrito() {
