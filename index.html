@@ -126,135 +126,15 @@
     </div>
   </div>
 
-</body>
-</html><!DOCTYPE html>
-<html lang="es">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>FEMA — Catálogo de joyas</title>
-  
-  <!-- Fuentes -->
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;1,400;1,500&family=Jost:wght@300;400;500;600&display=swap" rel="stylesheet">
-  
-  <!-- Librerías de Estilo (Bootstrap & PhotoSwipe) -->
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-  <link rel="stylesheet" href="https://unpkg.com/photoswipe@5.4.3/dist/photoswipe.css">
-  
-  <!-- Estilos propios -->
-  <link rel="stylesheet" href="./styles.css">
-</head>
-<body>
+  <!-- Scripts de Librerías -->
+  <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+  <script type="module">
+    import PhotoSwipeLightbox from 'https://unpkg.com/photoswipe@5.4.3/dist/photoswipe-lightbox.esm.js';
+    window.PhotoSwipeLightbox = PhotoSwipeLightbox;
+  </script>
 
-  <header>
-    <h1 class="wordmark">FE<em>MA</em></h1>
-    <div class="tagline">Catálogo de joyería</div>
-  </header>
-
-  <main>
-    <div class="toolbar">
-      <div>
-        <h2>Piezas disponibles</h2>
-        <div class="count" id="resultCount">Cargando catálogo…</div>
-      </div>
-    </div>
-
-    <div class="filters">
-      <div><label>Buscar</label><input type="text" id="fSearch" placeholder="Nombre o descripción..."></div>
-      <div>
-        <label>Categoría</label>
-        <select id="fCategoria">
-          <option value="">Todas</option>
-          <option>Anillos</option>
-          <option>Collares</option>
-          <option>Aretes</option>
-          <option>Pulseras</option>
-          <option>Relojes</option>
-        </select>
-      </div>
-      <div>
-        <label>Material</label>
-        <select id="fMaterial">
-          <option value="">Todos</option>
-          <option>Oro amarillo</option>
-          <option>Oro rosa</option>
-          <option>Oro blanco</option>
-          <option>Plata 925</option>
-          <option>Acero quirúrgico</option>
-        </select>
-      </div>
-      <div>
-        <label>Piedra</label>
-        <select id="fPiedra">
-          <option value="">Todas</option>
-          <option>Ninguna</option>
-          <option>Diamante</option>
-          <option>Esmeralda</option>
-          <option>Zafiro</option>
-          <option>Rubí</option>
-          <option>Perla</option>
-          <option>Circonia</option>
-          <option>Amatista</option>
-        </select>
-      </div>
-      <div>
-        <label>Ordenar por</label>
-        <select id="fOrden">
-          <option value="reciente">Más reciente</option>
-          <option value="precioAsc">Precio: menor a mayor</option>
-          <option value="precioDesc">Precio: mayor a menor</option>
-          <option value="nombre">Nombre A-Z</option>
-        </select>
-      </div>
-      <div class="filters-clear">
-        <button id="clearFilters" class="facet-sm">Limpiar filtros</button>
-      </div>
-    </div>
-
-    <div id="gridArea">
-      <div class="loading">Cargando el catálogo…</div>
-    </div>
-  </main>
-
-  <footer>Fema · Catálogo de joyería</footer>
-
-  <!-- Botón Flotante de Carrito -->
-  <div id="btn-carrito-flotante" onclick="mostrarCarrito()" style="position: fixed; bottom: 30px; right: 30px; z-index: 1050; cursor: pointer;">
-    <div style="background-color: #d4af37; color: white; width: 60px; height: 60px; border-radius: 50%; display: flex; align-items: center; justify-content: center; position: relative;">
-      <span>🛒</span>
-      <span id="carrito-badge" style="position: absolute; top: -3px; right: -3px; background-color: #ff3b30; color: white; border-radius: 50%; padding: 2px 7px; font-size: 11px; display: none;">0</span>
-    </div>
-  </div>
-
-  <!-- Botón Flotante de Instagram -->
-  <a href="https://www.instagram.com/fema.py/?hl=es" target="_blank" rel="noopener noreferrer" class="btn-flotante-ig" title="Síguenos en Instagram">
-    <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-      <rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect>
-      <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path>
-      <line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line>
-    </svg>
-  </a>
-
-  <!-- Offcanvas del Carrito -->
-  <div class="offcanvas offcanvas-end" tabindex="-1" id="offcanvas-carrito" style="z-index: 1060; width: 400px;">
-    <div class="offcanvas-header">
-      <h5>🛒 Mi Carrito</h5>
-      <button type="button" class="btn-close" data-bs-dismiss="offcanvas"></button>
-    </div>
-    <div class="offcanvas-body" id="lista-carrito"></div>
-    <div class="p-3 border-top bg-light">
-      <div class="d-flex justify-content-between mb-3">
-        <span class="fw-bold">Total:</span>
-        <span id="total-carrito">0 Gs.</span>
-      </div>
-      <div class="d-grid gap-2">
-        <button class="btn btn-success" onclick="enviarCarritoWhatsApp()">🟢 Confirmar por WhatsApp</button>
-      </div>
-    </div>
-  </div>
-
+  <!-- Script principal del proyecto -->
   <script src="./app.js"></script>
 </body>
 </html>
